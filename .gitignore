@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+
+# Personal Uber export and anything derived from it
+Uber Data/
+*.zip
+data/processed/
