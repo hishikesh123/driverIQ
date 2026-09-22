@@ -1,5 +1,7 @@
 import os
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
@@ -34,6 +36,11 @@ GRID_DECIMALS = 2
 # A trip is evidence; a location claim resting on a handful of them is not.
 # Reported alongside every aggregate so thin cells cannot masquerade as signal.
 CONFIDENCE_BANDS = [(30, "high"), (10, "moderate"), (3, "low")]
+
+def today_day_name() -> str:
+    """Resolve "today" in the driver's own timezone, never in the model."""
+    return datetime.now(ZoneInfo(TZ)).strftime("%A")
+
 
 TIME_WINDOWS = [
     ("morning", 6, 9),

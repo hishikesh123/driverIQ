@@ -105,6 +105,13 @@ def baseline_prediction(train: pd.DataFrame, test: pd.DataFrame) -> pd.Series:
     return pd.Series([means.get(k, overall) for k in keys], index=test.index)
 
 
+def _serial(estimator):
+    """Pin an estimator to one thread where bit-for-bit repeatability matters."""
+    if "n_jobs" in estimator.get_params():
+        estimator.set_params(n_jobs=1)
+    return estimator
+
+
 def _pipeline(estimator) -> Pipeline:
     return Pipeline([
         ("prep", ColumnTransformer([
@@ -195,10 +202,14 @@ def conformal_interval(train: pd.DataFrame, test: pd.DataFrame, estimator,
     cut = int(len(train) * (1 - calibration_fraction))
     fit_part, calib = train.iloc[order[:cut]], train.iloc[order[cut:]]
 
-    point = _pipeline(clone(estimator)).fit(fit_part[features], fit_part[TARGET])
+    # Single-threaded on purpose. Parallel tree averaging varies in the last
+    # float bits, and that noise cascades: residuals shift, the spread model
+    # splits differently, q moves, and the published bands changed by up to
+    # $0.06 between identical runs. Bands people quote must be reproducible.
+    point = _pipeline(_serial(clone(estimator))).fit(fit_part[features], fit_part[TARGET])
     residuals = np.abs(fit_part[TARGET].to_numpy() - point.predict(fit_part[features]))
     spread = _pipeline(RandomForestRegressor(
-        n_estimators=300, min_samples_leaf=8, random_state=seed + 1, n_jobs=-1
+        n_estimators=300, min_samples_leaf=8, random_state=seed + 1, n_jobs=1
     )).fit(fit_part[features], residuals)
 
     sigma_calib = np.maximum(spread.predict(calib[features]), SPREAD_FLOOR)
@@ -208,7 +219,7 @@ def conformal_interval(train: pd.DataFrame, test: pd.DataFrame, estimator,
 
     # Refit the centre on all training data: the band's validity is confirmed
     # by measured coverage on the test period, not assumed from theory.
-    final = _pipeline(clone(estimator)).fit(train[features], train[TARGET])
+    final = _pipeline(_serial(clone(estimator))).fit(train[features], train[TARGET])
     sigma = np.maximum(spread.predict(test[features]), SPREAD_FLOOR)
     prediction = final.predict(test[features])
 

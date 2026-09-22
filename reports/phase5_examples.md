@@ -12,7 +12,7 @@ Output is structured data, never prose — Phase 6 narrates these dictionaries r
 
 ```
 Friday from 17:00 for 4h  →  WORTH GOING
-  Expected $51.24 (80% band $24.92–$77.55) · $12.81/available hour
+  Expected $51.24 (80% band $24.93–$77.54) · $12.81/available hour
     evening_peak  3h  $46.79  n=54  high
     night         1h  $4.44  n=19  moderate pro-rated
   Stay: about 3h — trips/hour peaks in hour 2 then falls off
@@ -25,7 +25,7 @@ Friday from 17:00 for 4h  →  WORTH GOING
 
 ```
 Tuesday from 11:00 for 3h  →  WORTH GOING
-  Expected $37.52 (80% band $27.84–$47.20) · $12.51/available hour
+  Expected $37.52 (80% band $27.88–$47.16) · $12.51/available hour
     lunch         2h  $31.70  n=30  high
     late_morning  1h  $5.82  n=19  moderate pro-rated
   Stay: about 3h — trips/hour peaks in hour 2 then falls off
@@ -38,7 +38,7 @@ Tuesday from 11:00 for 3h  →  WORTH GOING
 
 ```
 Sunday from 14:00 for 3h  →  MARGINAL
-  Expected $12.65 (80% band $2.33–$22.97) · $4.22/available hour
+  Expected $12.65 (80% band $2.39–$22.91) · $4.22/available hour
     afternoon     3h  $12.65  n=39  high
   Stay: about 3h — trips/hour peaks in hour 2 then falls off
   Better starts same day: 17:00 ($48), 11:00 ($38), 18:00 ($37)
@@ -59,14 +59,14 @@ Monday from 6:00 for 3h  →  NOT ENOUGH EVIDENCE
 
 | Day | Window | Expected | 80% band | Worked | Confidence |
 |---|---|---|---|---|---|
-| Thursday | evening_peak | $49.16 | $24.67–$73.65 | 50 | high |
-| Sunday | evening_peak | $47.67 | $25.23–$70.11 | 42 | high |
-| Friday | evening_peak | $46.79 | $20.60–$72.99 | 54 | high |
-| Saturday | evening_peak | $44.78 | $20.60–$68.96 | 46 | high |
-| Wednesday | evening_peak | $43.03 | $26.26–$59.80 | 45 | high |
-| Monday | evening_peak | $40.87 | $21.29–$60.45 | 38 | high |
-| Tuesday | evening_peak | $39.70 | $18.97–$60.43 | 36 | high |
-| Tuesday | lunch | $31.70 | $22.38–$41.02 | 30 | high |
+| Thursday | evening_peak | $49.16 | $24.68–$73.64 | 50 | high |
+| Sunday | evening_peak | $47.67 | $25.19–$70.16 | 42 | high |
+| Friday | evening_peak | $46.79 | $20.61–$72.98 | 54 | high |
+| Saturday | evening_peak | $44.78 | $20.54–$69.02 | 46 | high |
+| Wednesday | evening_peak | $43.03 | $26.24–$59.82 | 45 | high |
+| Monday | evening_peak | $40.87 | $21.27–$60.47 | 38 | high |
+| Tuesday | evening_peak | $39.70 | $18.95–$60.46 | 36 | high |
+| Tuesday | lunch | $31.70 | $22.41–$40.98 | 30 | high |
 
 **Never worked:** morning, overnight. The engine returns no figure for these rather than extrapolating.
 

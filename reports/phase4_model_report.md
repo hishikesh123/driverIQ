@@ -58,18 +58,18 @@ looked fine until it was checked against reality.
    of the error from the same features; held-out rows calibrate it.
 
 - Calibrated multiplier: **2.22×** predicted spread
-- Achieved coverage on the test period: **77.8%** (nominal 80%)
-- Mean band width: $26.55
+- Achieved coverage on the test period: **77.4%** (nominal 80%)
+- Mean band width: $26.53
 
 The band now adapts instead of applying one width everywhere:
 
 | Window | Mean band | Width |
 |---|---|---|
-| afternoon | $3.85–$30.48 | $26.63 |
-| evening_peak | $32.06–$73.49 | $41.43 |
-| late_morning | $6.81–$24.28 | $17.47 |
-| lunch | $20.27–$41.83 | $21.56 |
-| night | $5.12–$24.22 | $19.10 |
+| afternoon | $3.88–$30.45 | $26.57 |
+| evening_peak | $32.03–$73.51 | $41.48 |
+| late_morning | $6.83–$24.26 | $17.44 |
+| lunch | $20.30–$41.80 | $21.50 |
+| night | $5.13–$24.21 | $19.08 |
 
 Evening peak genuinely varies more than late morning, and the band now says so.
 The band is the honest output; the point estimate is just its middle.
@@ -103,16 +103,16 @@ answer where evidence is thin instead of quoting a confident figure.
 
 | Day | Window | Expected | 80% band | Worked | Confidence |
 |---|---|---|---|---|---|
-| Thursday | evening_peak | $49.16 | $24.67–$73.65 | 50 | high |
-| Sunday | evening_peak | $47.67 | $25.23–$70.11 | 42 | high |
-| Friday | evening_peak | $46.79 | $20.60–$72.99 | 54 | high |
-| Saturday | evening_peak | $44.78 | $20.60–$68.96 | 46 | high |
-| Wednesday | evening_peak | $43.03 | $26.26–$59.80 | 45 | high |
-| Monday | evening_peak | $40.87 | $21.29–$60.45 | 38 | high |
-| Tuesday | evening_peak | $39.70 | $18.97–$60.43 | 36 | high |
-| Tuesday | lunch | $31.70 | $22.38–$41.02 | 30 | high |
+| Thursday | evening_peak | $49.16 | $24.68–$73.64 | 50 | high |
+| Sunday | evening_peak | $47.67 | $25.19–$70.16 | 42 | high |
+| Friday | evening_peak | $46.79 | $20.61–$72.98 | 54 | high |
+| Saturday | evening_peak | $44.78 | $20.54–$69.02 | 46 | high |
+| Wednesday | evening_peak | $43.03 | $26.24–$59.82 | 45 | high |
+| Monday | evening_peak | $40.87 | $21.27–$60.47 | 38 | high |
+| Tuesday | evening_peak | $39.70 | $18.95–$60.46 | 36 | high |
+| Tuesday | lunch | $31.70 | $22.41–$40.98 | 30 | high |
 | Sunday | lunch | $31.47 | $10.16–$52.78 | 40 | high |
-| Thursday | lunch | $28.75 | $18.05–$39.45 | 39 | high |
+| Thursday | lunch | $28.75 | $18.09–$39.41 | 39 | high |
 
 ## How to read this
 
