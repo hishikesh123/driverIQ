@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DriverIQ — Phase 3</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface: #fcfcfb; --page: #f9f9f7; --ink: #0b0b0b; --ink2: #52514e;
+  --muted: #898781; --grid: #e1e0d9; --border: rgba(11,11,11,0.10);
+  --accent: #2a78d6;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #1a1a19; --page: #0d0d0d; --ink: #ffffff; --ink2: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+  --accent: #3987e5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface: #1a1a19; --page: #0d0d0d; --ink: #ffffff; --ink2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+    --accent: #3987e5;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 32px 16px 64px;
+}
+.wrap { max-width: 1060px; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.01em; }
+.sub { color: var(--ink2); font-size: 14px; margin: 0 0 28px; }
+#theme {
+  background: var(--surface); color: var(--ink2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 13px; font: inherit; font-size: 13px; cursor: pointer;
+  white-space: nowrap;
+}
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 30px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px 17px; }
+.kpi .v { font-size: 27px; font-weight: 600; letter-spacing: -0.02em; }
+.kpi .v.text { font-size: 19px; line-height: 1.25; padding: 4px 0; }
+.kpi .k { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px 16px; margin-bottom: 20px; }
+.card h2 { font-size: 16px; margin: 0 0 3px; }
+.card .note { font-size: 13px; color: var(--ink2); margin: 0 0 16px; }
+.flag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px;
+        border: 1px solid var(--border); color: var(--muted); margin-left: 8px; vertical-align: 2px; }
+details { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+summary { cursor: pointer; font-size: 13px; color: var(--ink2); }
+table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 12px;
+        font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 5px 9px; border-bottom: 1px solid var(--grid); }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 500; }
+footer { color: var(--muted); font-size: 12px; margin-top: 28px; }
+.maplegend { display: flex; align-items: center; gap: 7px; font-size: 12px;
+             color: var(--muted); margin-bottom: 11px; flex-wrap: wrap; }
+.maplegend i { display: inline-block; width: 104px; height: 9px; border-radius: 99px; }
+.maplegend .sep { opacity: 0.5; }
+.folium-map, .maplegend + div iframe { border-radius: 10px; }
+@media (max-width: 640px) { body { padding: 20px 12px 48px; } .card { padding: 16px 14px 12px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>DriverIQ — historical earnings</h1>
+    <p class="sub">Melbourne bike courier · Aug 2024 – Aug 2026 · GPS for one month of it</p>
+  </div>
+  <button id="theme" type="button">Dark</button>
+</header>
+<div class="kpis"><div class="kpi"><div class="v">$35,828</div><div class="k">earned over 383 active days</div></div><div class="kpi"><div class="v">4,881</div><div class="k">trips, Aug 2024 – Aug 2026</div></div><div class="kpi"><div class="v">$93.55</div><div class="k">per active day</div></div><div class="kpi"><div class="v text">Fri evening peak</div><div class="k">best window · $53/day</div></div><div class="kpi"><div class="v">$17.96</div><div class="k">per hour · 34 GPS sessions only</div></div></div>
+<section class="card"><h2>Earnings by time of day<span class="flag">4,881 trips · 2 years</span></h2><p class="note">Two years of trips. Earnings are bimodal — a lunch peak and a larger dinner peak — and the driver earns more at those hours by completing more trips, not better-paid ones: earnings per trip stays near $7 all day.</p><div style="height:380px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.1.1.min.js" integrity="sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=" crossorigin="anonymous"></script>                <div id="8dd0f6b7-3418-4f3e-818d-0548d5d990ee" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("8dd0f6b7-3418-4f3e-818d-0548d5d990ee")) {                    Plotly.newPlot(                        "8dd0f6b7-3418-4f3e-818d-0548d5d990ee",                        [{"customdata":{"dtype":"f8","bdata":"AAAAAAAAJkBXFnhlgVckQAAAAAAAACJAAAAAAABAcUBBfcRkzbgfQAAAAAAAYGJAAAAAAACwg0Acv0P0YrQdQAAAAAAAYG1AAAAAAABYgEAeX6JZKt8cQAAAAAAAoG1AAAAAAADAc0AygPU2aIQeQAAAAAAAYGJAAAAAAACAckA7hhfnoUMeQAAAAAAAwGFAAAAAAAAgeUDLk8vkVaoeQAAAAAAAwGpAAAAAAAAQhkDFSVlKpS4dQAAAAAAAUHFAAAAAAABgikBdX6n6Kc0cQAAAAAAA4HFAAAAAAACYgkC1FLd2CuAbQAAAAAAAQG9AAAAAAAAAbkAVZx8+w94bQAAAAAAAgF9AAAAAAAAAQkA18axoJOAcQAAAAAAAADJAAAAAAAAAGEDXo3A9CtcXQAAAAAAAAABA","shape":"13, 3"},"hovertemplate":"\u003cb\u003e%{x}:00\u003c\u002fb\u003e\u003cbr\u003eEarnings $%{y:,.2f}\u003cbr\u003eTrips %{customdata[0]}\u003cbr\u003ePer trip $%{customdata[1]:.2f}\u003cbr\u003eActive days %{customdata[2]}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#2a78d6","line":{"width":0}},"text":["","","$4,678","","","","","","$6,077","","","",""],"textfont":{"color":"#52514e","size":11},"textposition":"outside","x":{"dtype":"i4","bdata":"CgAAAAsAAAAMAAAADQAAAA4AAAAPAAAAEAAAABEAAAASAAAAEwAAABQAAAAVAAAAFgAAAA=="},"y":{"dtype":"f8","bdata":"uB6F61H4W0CF61G4nhmhQBSuR+F6RrJAKVyPwvV9rUAfhetRuNWiQJqZmZkZf6FACtejcL0TqEBcj8L1qB60QJqZmZkZvbdASOF6FG4ysECkcD0K1yCaQK5H4XoUPnBA4XoUrkfhQUA="},"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"bargap":0.3,"xaxis":{"title":{"text":"Hour of day"},"dtick":1,"tickformat":"d","tickfont":{"color":"#898781"},"showgrid":false,"zeroline":false,"linecolor":"#c3c2b7","linewidth":1},"yaxis":{"title":{"text":"Earnings (AUD)"},"tickprefix":"$","separatethousands":true,"tickfont":{"color":"#898781"},"gridcolor":"#e1e0d9","gridwidth":1,"zeroline":false,"showline":false},"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":12,"color":"#52514e"},"margin":{"l":8,"r":8,"t":8,"b":8},"hoverlabel":{"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":12}},"height":380,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","showlegend":false},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div><details><summary>Table view</summary><table><thead><tr><th>Hour</th><th>Trips</th><th>Earnings</th><th>Per trip</th><th>Active days</th><th>Confidence</th></tr></thead><tbody><tr><td>10</td><td>11</td><td>111.88</td><td>10.17</td><td>9</td><td>moderate</td></tr><tr><td>11</td><td>276</td><td>2,188.81</td><td>7.93</td><td>147</td><td>high</td></tr><tr><td>12</td><td>630</td><td>4,678.48</td><td>7.43</td><td>235</td><td>high</td></tr><tr><td>13</td><td>523</td><td>3,774.98</td><td>7.22</td><td>237</td><td>high</td></tr><tr><td>14</td><td>316</td><td>2,410.86</td><td>7.63</td><td>147</td><td>high</td></tr><tr><td>15</td><td>296</td><td>2,239.55</td><td>7.57</td><td>142</td><td>high</td></tr><tr><td>16</td><td>402</td><td>3,081.87</td><td>7.67</td><td>214</td><td>high</td></tr><tr><td>17</td><td>706</td><td>5,150.66</td><td>7.30</td><td>277</td><td>high</td></tr><tr><td>18</td><td>844</td><td>6,077.10</td><td>7.20</td><td>286</td><td>high</td></tr><tr><td>19</td><td>595</td><td>4,146.43</td><td>6.97</td><td>250</td><td>high</td></tr><tr><td>20</td><td>240</td><td>1,672.21</td><td>6.97</td><td>126</td><td>high</td></tr><tr><td>21</td><td>36</td><td>259.88</td><td>7.22</td><td>18</td><td>high</td></tr><tr><td>22</td><td>6</td><td>35.76</td><td>5.96</td><td>2</td><td>low</td></tr></tbody></table></details></section><section class="card"><h2>Earnings by location<span class="flag">257 trips · 1 month</span></h2><p class="note">Rate, not total, so a location is not rewarded merely for being stood in longer. The two minor cells hint at a higher rate than the main one, but they rest on 24 and 29 trips — a hypothesis to test, not a finding.</p><div style="height:260px; width:100%;">                            <div id="f4f388b5-9980-4dcd-b944-040749958c32" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("f4f388b5-9980-4dcd-b944-040749958c32")) {                    Plotly.newPlot(                        "f4f388b5-9980-4dcd-b944-040749958c32",                        [{"customdata":[[4,29.0,203.24,"low"],[27,204.0,1423.45,"moderate"],[2,24.0,158.82999999999998,"insufficient"]],"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003e$%{x:.2f}\u002fhour\u003cbr\u003eSessions %{customdata[0]}\u003cbr\u003eTrips %{customdata[1]}\u003cbr\u003eEarnings $%{customdata[2]:,.2f}\u003cbr\u003eConfidence %{customdata[3]}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#2a78d6","line":{"width":0}},"orientation":"h","text":["  $14.63\u002fh \u00b7 4 sessions \u00b7 29 trips \u00b7 low","  $18.27\u002fh \u00b7 27 sessions \u00b7 204 trips \u00b7 moderate","  $22.15\u002fh \u00b7 2 sessions \u00b7 24 trips \u00b7 insufficient"],"textfont":{"color":"#52514e","size":11},"textposition":"outside","x":{"dtype":"f8","bdata":"HcidOsRALUAsavhG80UyQGMWOqybJzZA"},"y":["-37.65,145.08","-37.65,145.07","-37.66,145.08"],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"bargap":0.45,"xaxis":{"title":{"text":"Earnings per online hour (AUD)"},"tickprefix":"$","range":[0,46.52491016843907],"tickfont":{"color":"#898781"},"showgrid":false,"zeroline":false,"linecolor":"#c3c2b7","linewidth":1},"yaxis":{"title":{"text":""},"tickfont":{"size":11,"color":"#898781"},"showgrid":false,"gridcolor":"#e1e0d9","gridwidth":1,"zeroline":false,"showline":false},"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":12,"color":"#52514e"},"margin":{"l":8,"r":8,"t":8,"b":8},"hoverlabel":{"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":12}},"height":260,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","showlegend":false},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div><details><summary>Table view</summary><table><thead><tr><th>Cell</th><th>Sessions</th><th>Trips</th><th>Earnings</th><th>$/hour</th><th>Confidence</th></tr></thead><tbody><tr><td>-37.65,145.07</td><td>27</td><td>204.00</td><td>1,423.45</td><td>18.27</td><td>moderate</td></tr><tr><td>-37.65,145.08</td><td>4</td><td>29.00</td><td>203.24</td><td>14.63</td><td>low</td></tr><tr><td>-37.66,145.08</td><td>2</td><td>24.00</td><td>158.83</td><td>22.15</td><td>insufficient</td></tr></tbody></table></details></section><section class="card"><h2>Location × day × time window<span class="flag">1 of 42 cells high confidence</span></h2><p class="note">The README's core unit. Colour shows earnings per hour only where at least 10 trips support it; flat grey tiles are windows worked but too thin to measure. Numbers in each tile are trip counts. Just 1 of 42 cells reaches high confidence — the emptiness is the finding.</p><div style="height:360px; width:100%;">                            <div id="157b276b-5e72-45db-a060-30144b8793ae" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("157b276b-5e72-45db-a060-30144b8793ae")) {                    Plotly.newPlot(                        "157b276b-5e72-45db-a060-30144b8793ae",                        [{"colorscale":[[0,"#e6e5e0"],[1,"#e6e5e0"]],"hoverinfo":"skip","meta":"unmeasured","showscale":false,"x":["morning","late_morning","lunch","afternoon","evening_peak","night","overnight"],"xgap":2,"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"ygap":2,"z":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA8D8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA8D8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA8D8AAAAAAAD4fwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA8D8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA8D8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"type":"heatmap","xaxis":"x","yaxis":"y"},{"colorbar":{"len":0.75,"outlinewidth":0,"thickness":10,"tickfont":{"color":"#898781","size":10},"tickprefix":"$","title":{"font":{"size":11},"text":"$\u002fhour"}},"colorscale":[[0.0,"#cde2fb"],[0.08333333333333333,"#b7d3f6"],[0.16666666666666666,"#9ec5f4"],[0.25,"#86b6ef"],[0.3333333333333333,"#6da7ec"],[0.4166666666666667,"#5598e7"],[0.5,"#3987e5"],[0.5833333333333334,"#2a78d6"],[0.6666666666666666,"#256abf"],[0.75,"#1c5cab"],[0.8333333333333334,"#184f95"],[0.9166666666666666,"#104281"],[1.0,"#0d366b"]],"customdata":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAAIQAAAAAAAABBAAAAAAAAA8D8AAAAAAAAcQAAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAABxAAAAAAAAAMUAAAAAAAADwPwAAAAAAABxAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAAAEAAAAAAAAAcQAAAAAAAABBAAAAAAAAAOUAAAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAAiQAAAAAAAAChAAAAAAAAA8D8AAAAAAAA+QAAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAABxAAAAAAAAAMkAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAAIkAAAAAAAAAgQAAAAAAAAPA\u002fAAAAAAAAMEAAAAAAAAAAAAAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAAQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"hovertemplate":"\u003cb\u003e%{y} \u00b7 %{x}\u003c\u002fb\u003e\u003cbr\u003e$%{z:.2f}\u002fhour\u003cbr\u003e%{customdata:.0f} trips\u003cextra\u003e\u003c\u002fextra\u003e","showscale":false,"x":["morning","late_morning","lunch","afternoon","evening_peak","night","overnight"],"xgap":2,"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"ygap":2,"z":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fgjwlyFMCNEAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fcKw56saaNEAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fz2RgfT+XC9AAAAAAAAA+H9iFCPepUw4QAAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fEYUALmerNEAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002f09C5AUE7NEAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"zmax":25.133333333333336,"zmin":15.681632653061223,"type":"heatmap","xaxis":"x","yaxis":"y"},{"colorscale":[[0,"#e6e5e0"],[1,"#e6e5e0"]],"hoverinfo":"skip","meta":"unmeasured","showscale":false,"x":["morning","late_morning","lunch","afternoon","evening_peak","night","overnight"],"xgap":2,"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"ygap":2,"z":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA8D8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA8D8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"type":"heatmap","xaxis":"x2","yaxis":"y2"},{"colorbar":{"len":0.75,"outlinewidth":0,"thickness":10,"tickfont":{"color":"#898781","size":10},"tickprefix":"$","title":{"font":{"size":11},"text":"$\u002fhour"}},"colorscale":[[0.0,"#cde2fb"],[0.08333333333333333,"#b7d3f6"],[0.16666666666666666,"#9ec5f4"],[0.25,"#86b6ef"],[0.3333333333333333,"#6da7ec"],[0.4166666666666667,"#5598e7"],[0.5,"#3987e5"],[0.5833333333333334,"#2a78d6"],[0.6666666666666666,"#256abf"],[0.75,"#1c5cab"],[0.8333333333333334,"#184f95"],[0.9166666666666666,"#104281"],[1.0,"#0d366b"]],"customdata":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAAAAAAAAAAAAAYQAAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAAAAAAAAAAAABBAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAADJAAAAAAAAAAAAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"hovertemplate":"\u003cb\u003e%{y} \u00b7 %{x}\u003c\u002fb\u003e\u003cbr\u003e$%{z:.2f}\u002fhour\u003cbr\u003e%{customdata:.0f} trips\u003cextra\u003e\u003c\u002fextra\u003e","showscale":false,"x":["morning","late_morning","lunch","afternoon","evening_peak","night","overnight"],"xgap":2,"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"ygap":2,"z":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4f9VIaTpF4DNAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"zmax":25.133333333333336,"zmin":15.681632653061223,"type":"heatmap","xaxis":"x2","yaxis":"y2"},{"colorscale":[[0,"#e6e5e0"],[1,"#e6e5e0"]],"hoverinfo":"skip","meta":"unmeasured","showscale":false,"x":["morning","late_morning","lunch","afternoon","evening_peak","night","overnight"],"xgap":2,"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"ygap":2,"z":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA8D8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPA\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"type":"heatmap","xaxis":"x3","yaxis":"y3"},{"colorbar":{"len":0.75,"outlinewidth":0,"thickness":10,"tickfont":{"color":"#898781","size":10},"tickprefix":"$","title":{"font":{"size":11},"text":"$\u002fhour"}},"colorscale":[[0.0,"#cde2fb"],[0.08333333333333333,"#b7d3f6"],[0.16666666666666666,"#9ec5f4"],[0.25,"#86b6ef"],[0.3333333333333333,"#6da7ec"],[0.4166666666666667,"#5598e7"],[0.5,"#3987e5"],[0.5833333333333334,"#2a78d6"],[0.6666666666666666,"#256abf"],[0.75,"#1c5cab"],[0.8333333333333334,"#184f95"],[0.9166666666666666,"#104281"],[1.0,"#0d366b"]],"customdata":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAADwPwAAAAAAAChAAAAAAAAAAAAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAAAAAAAAAAAAJkAAAAAAAAAAAAAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"hovertemplate":"\u003cb\u003e%{y} \u00b7 %{x}\u003c\u002fb\u003e\u003cbr\u003e$%{z:.2f}\u002fhour\u003cbr\u003e%{customdata:.0f} trips\u003cextra\u003e\u003c\u002fextra\u003e","showscale":true,"x":["morning","late_morning","lunch","afternoon","evening_peak","night","overnight"],"xgap":2,"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"ygap":2,"z":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4f\u002fnFkl8seThAAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fIyIiIiIiOUAAAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8=","shape":"7, 7"},"zmax":25.133333333333336,"zmin":15.681632653061223,"type":"heatmap","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"xaxis":{"anchor":"y","domain":[0.0,0.3066666666666667],"tickfont":{"size":9,"color":"#898781"},"tickangle":-40,"showline":false,"showgrid":false,"zeroline":false,"linecolor":"#c3c2b7","linewidth":1},"yaxis":{"anchor":"x","domain":[0.0,1.0],"tickfont":{"size":10,"color":"#898781"},"autorange":"reversed","gridcolor":"#e1e0d9","gridwidth":1,"zeroline":false,"showline":false},"xaxis2":{"anchor":"y2","domain":[0.3466666666666667,0.6533333333333333],"tickfont":{"size":9,"color":"#898781"},"tickangle":-40,"showline":false,"showgrid":false,"zeroline":false,"linecolor":"#c3c2b7","linewidth":1},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickfont":{"size":10,"color":"#898781"},"autorange":"reversed","gridcolor":"#e1e0d9","gridwidth":1,"zeroline":false,"showline":false},"xaxis3":{"anchor":"y3","domain":[0.6933333333333334,1.0],"tickfont":{"size":9,"color":"#898781"},"tickangle":-40,"showline":false,"showgrid":false,"zeroline":false,"linecolor":"#c3c2b7","linewidth":1},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickfont":{"size":10,"color":"#898781"},"autorange":"reversed","gridcolor":"#e1e0d9","gridwidth":1,"zeroline":false,"showline":false},"annotations":[{"font":{"color":"#52514e","size":11},"showarrow":false,"text":"-37.65,145.07","x":0.15333333333333335,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#52514e","size":11},"showarrow":false,"text":"-37.65,145.08","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#52514e","size":11},"showarrow":false,"text":"-37.66,145.08","x":0.8466666666666667,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"3","x":"late_morning","xref":"x","y":"Monday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"4","x":"lunch","xref":"x","y":"Monday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"afternoon","xref":"x","y":"Monday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"7","x":"evening_peak","xref":"x","y":"Monday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"7","x":"late_morning","xref":"x","y":"Tuesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"17","x":"lunch","xref":"x","y":"Tuesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"afternoon","xref":"x","y":"Tuesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"7","x":"evening_peak","xref":"x","y":"Tuesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"2","x":"late_morning","xref":"x","y":"Wednesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"7","x":"lunch","xref":"x","y":"Wednesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"4","x":"afternoon","xref":"x","y":"Wednesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"25","x":"evening_peak","xref":"x","y":"Wednesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"night","xref":"x","y":"Wednesday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"9","x":"late_morning","xref":"x","y":"Thursday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"12","x":"lunch","xref":"x","y":"Thursday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"afternoon","xref":"x","y":"Thursday","yref":"y"},{"font":{"color":"#ffffff","size":9},"showarrow":false,"text":"30","x":"evening_peak","xref":"x","y":"Thursday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"night","xref":"x","y":"Thursday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"7","x":"late_morning","xref":"x","y":"Friday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"18","x":"lunch","xref":"x","y":"Friday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"9","x":"late_morning","xref":"x","y":"Saturday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"8","x":"lunch","xref":"x","y":"Saturday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"afternoon","xref":"x","y":"Saturday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"16","x":"evening_peak","xref":"x","y":"Saturday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"night","xref":"x","y":"Saturday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"4","x":"late_morning","xref":"x","y":"Sunday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"lunch","xref":"x","y":"Sunday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"afternoon","xref":"x","y":"Sunday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"2","x":"evening_peak","xref":"x","y":"Sunday","yref":"y"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"afternoon","xref":"x2","y":"Monday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"6","x":"evening_peak","xref":"x2","y":"Monday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"afternoon","xref":"x2","y":"Tuesday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"4","x":"evening_peak","xref":"x2","y":"Tuesday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"afternoon","xref":"x2","y":"Friday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"18","x":"evening_peak","xref":"x2","y":"Friday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"night","xref":"x2","y":"Friday","yref":"y2"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"1","x":"afternoon","xref":"x3","y":"Friday","yref":"y3"},{"font":{"color":"#ffffff","size":9},"showarrow":false,"text":"12","x":"evening_peak","xref":"x3","y":"Friday","yref":"y3"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"night","xref":"x3","y":"Friday","yref":"y3"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"afternoon","xref":"x3","y":"Saturday","yref":"y3"},{"font":{"color":"#ffffff","size":9},"showarrow":false,"text":"11","x":"evening_peak","xref":"x3","y":"Saturday","yref":"y3"},{"font":{"color":"#52514e","size":9},"showarrow":false,"text":"0","x":"night","xref":"x3","y":"Saturday","yref":"y3"}],"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":12,"color":"#52514e"},"margin":{"l":8,"r":8,"t":34,"b":8},"hoverlabel":{"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":12}},"height":360,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","showlegend":false},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div><details><summary>Table view</summary><table><thead><tr><th>Cell</th><th>Day</th><th>Window</th><th>Trips</th><th>Earnings</th><th>$/hour</th><th>Confidence</th></tr></thead><tbody><tr><td>-37.65,145.07</td><td>Thursday</td><td>evening_peak</td><td>30.00</td><td>204.52</td><td>24.30</td><td>high</td></tr><tr><td>-37.65,145.07</td><td>Wednesday</td><td>evening_peak</td><td>25.00</td><td>179.26</td><td>20.60</td><td>moderate</td></tr><tr><td>-37.65,145.07</td><td>Friday</td><td>lunch</td><td>18.00</td><td>135.73</td><td>20.67</td><td>moderate</td></tr><tr><td>-37.65,145.08</td><td>Friday</td><td>evening_peak</td><td>18.00</td><td>117.60</td><td>19.88</td><td>moderate</td></tr><tr><td>-37.65,145.07</td><td>Tuesday</td><td>lunch</td><td>17.00</td><td>110.05</td><td>20.01</td><td>moderate</td></tr><tr><td>-37.65,145.07</td><td>Saturday</td><td>evening_peak</td><td>16.00</td><td>120.04</td><td>20.23</td><td>moderate</td></tr><tr><td>-37.65,145.07</td><td>Thursday</td><td>lunch</td><td>12.00</td><td>76.84</td><td>15.68</td><td>moderate</td></tr><tr><td>-37.66,145.08</td><td>Friday</td><td>evening_peak</td><td>12.00</td><td>73.42</td><td>24.47</td><td>moderate</td></tr><tr><td>-37.66,145.08</td><td>Saturday</td><td>evening_peak</td><td>11.00</td><td>75.40</td><td>25.13</td><td>moderate</td></tr><tr><td>-37.65,145.07</td><td>Saturday</td><td>late_morning</td><td>9.00</td><td>57.77</td><td>20.63</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Thursday</td><td>late_morning</td><td>9.00</td><td>69.52</td><td>25.59</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Saturday</td><td>lunch</td><td>8.00</td><td>52.71</td><td>13.34</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Friday</td><td>late_morning</td><td>7.00</td><td>50.78</td><td>16.04</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Wednesday</td><td>lunch</td><td>7.00</td><td>47.91</td><td>24.57</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Tuesday</td><td>evening_peak</td><td>7.00</td><td>44.01</td><td>15.00</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Monday</td><td>evening_peak</td><td>7.00</td><td>42.99</td><td>14.49</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Tuesday</td><td>late_morning</td><td>7.00</td><td>42.12</td><td>13.81</td><td>low</td></tr><tr><td>-37.65,145.08</td><td>Monday</td><td>evening_peak</td><td>6.00</td><td>52.93</td><td>19.36</td><td>low</td></tr><tr><td>-37.65,145.08</td><td>Tuesday</td><td>evening_peak</td><td>4.00</td><td>27.41</td><td>11.92</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Wednesday</td><td>afternoon</td><td>4.00</td><td>26.74</td><td>15.73</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Sunday</td><td>late_morning</td><td>4.00</td><td>28.22</td><td>29.19</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Monday</td><td>lunch</td><td>4.00</td><td>29.04</td><td>16.59</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Monday</td><td>late_morning</td><td>3.00</td><td>19.57</td><td>12.76</td><td>low</td></tr><tr><td>-37.65,145.07</td><td>Sunday</td><td>evening_peak</td><td>2.00</td><td>17.47</td><td>17.18</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Wednesday</td><td>late_morning</td><td>2.00</td><td>17.36</td><td>12.86</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Tuesday</td><td>afternoon</td><td>1.00</td><td>7.01</td><td>10.52</td><td>insufficient</td></tr><tr><td>-37.65,145.08</td><td>Friday</td><td>afternoon</td><td>1.00</td><td>5.30</td><td>2.69</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Saturday</td><td>afternoon</td><td>1.00</td><td>6.07</td><td>6.07</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Monday</td><td>afternoon</td><td>1.00</td><td>6.00</td><td>12.41</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Wednesday</td><td>night</td><td>1.00</td><td>7.45</td><td>7.84</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Thursday</td><td>night</td><td>1.00</td><td>8.66</td><td>19.98</td><td>insufficient</td></tr><tr><td>-37.66,145.08</td><td>Friday</td><td>afternoon</td><td>1.00</td><td>10.01</td><td>26.11</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Thursday</td><td>afternoon</td><td>1.00</td><td>15.61</td><td>10.89</td><td>insufficient</td></tr><tr><td>-37.65,145.08</td><td>Monday</td><td>afternoon</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.65,145.08</td><td>Tuesday</td><td>afternoon</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.65,145.08</td><td>Friday</td><td>night</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Sunday</td><td>lunch</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Saturday</td><td>night</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.66,145.08</td><td>Friday</td><td>night</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.66,145.08</td><td>Saturday</td><td>afternoon</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.65,145.07</td><td>Sunday</td><td>afternoon</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr><tr><td>-37.66,145.08</td><td>Saturday</td><td>night</td><td>0.00</td><td>0.00</td><td>0.00</td><td>insufficient</td></tr></tbody></table></details></section><section class="card"><h2>Where the driving happened<span class="flag">99% of driving within 3 km</span></h2><p class="note">Cells sized by moving pings, not total pings — total pings measure where the phone rested. Home is the orange marker, excluded from productive time: it ranks 5th by raw online pings but 10th by actual movement. 99% of all real driving falls within 3 km of one point — which is why comparing one area against another is not possible.</p><div class="maplegend"><span>Share moving</span><span>0%</span><i style="background:linear-gradient(90deg,#cde2fb, #b7d3f6, #9ec5f4, #86b6ef, #6da7ec, #5598e7, #3987e5, #2a78d6, #256abf, #1c5cab, #184f95, #104281, #0d366b)"></i><span>more</span><span class="sep">·</span><span>circle size = moving pings</span></div><div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+    
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_2ea74eea292a702410708098676fc972 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+        
+&lt;/head&gt;
+&lt;body&gt;
+    
+    
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_2ea74eea292a702410708098676fc972&quot; &gt;&lt;/div&gt;
+        
+&lt;/body&gt;
+&lt;script&gt;
+    
+    
+            var map_2ea74eea292a702410708098676fc972 = L.map(
+                &quot;map_2ea74eea292a702410708098676fc972&quot;,
+                {
+                    center: [-37.65172413793104, 145.06931034482758],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 13,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_2ea74eea292a702410708098676fc972);
+
+            
+
+        
+    
+            var tile_layer_a46720e0838669b1e83378df1e4d2814 = L.tileLayer(
+                &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 19,
+  &quot;maxNativeZoom&quot;: 19,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;\u0026copy; \u003ca href=\&quot;https://www.openstreetmap.org/copyright\&quot;\u003eOpenStreetMap\u003c/a\u003e contributors&quot;,
+  &quot;subdomains&quot;: &quot;abc&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+        
+    
+            tile_layer_a46720e0838669b1e83378df1e4d2814.addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            var circle_marker_f62780dcfd07b5b6744d938954881350 = L.circleMarker(
+                [-37.65, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#86b6ef&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 30.0, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_f62780dcfd07b5b6744d938954881350.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.07&lt;/b&gt;&lt;br&gt;Online pings 71,337&lt;br&gt;Moving pings 16,738&lt;br&gt;Moving share 23%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_0b81bdcc36608b9761d5a05d8ed7faf6 = L.circleMarker(
+                [-37.65, 145.08],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#256abf&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 21.375094075518273, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_0b81bdcc36608b9761d5a05d8ed7faf6.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.08&lt;/b&gt;&lt;br&gt;Online pings 12,446&lt;br&gt;Moving pings 7,475&lt;br&gt;Moving share 60%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_8bb3fb0336edd504c8972f3b251937e3 = L.circleMarker(
+                [-37.66, 145.08],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#5598e7&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 15.846743097651224, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_8bb3fb0336edd504c8972f3b251937e3.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.66,145.08&lt;/b&gt;&lt;br&gt;Online pings 8,371&lt;br&gt;Moving pings 3,475&lt;br&gt;Moving share 42%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_5241db867f7a044acb189a2ccd884f2a = L.circleMarker(
+                [-37.65, 145.09],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2a78d6&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 15.82797799492545, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_5241db867f7a044acb189a2ccd884f2a.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.09&lt;/b&gt;&lt;br&gt;Online pings 6,825&lt;br&gt;Moving pings 3,464&lt;br&gt;Moving share 51%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_c7943ebae881afd46def8b9d00b82206 = L.circleMarker(
+                [-37.65, 145.06],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#1c5cab&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 14.28857142056033, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_c7943ebae881afd46def8b9d00b82206.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.06&lt;/b&gt;&lt;br&gt;Online pings 4,021&lt;br&gt;Moving pings 2,621&lt;br&gt;Moving share 65%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_1a4f7d422c95647bbf1e7c18739070c6 = L.circleMarker(
+                [-37.66, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#256abf&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 12.28358352431492, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_1a4f7d422c95647bbf1e7c18739070c6.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.66,145.07&lt;/b&gt;&lt;br&gt;Online pings 2,822&lt;br&gt;Moving pings 1,699&lt;br&gt;Moving share 60%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_42b6a6cf25acd4cbcda6ae29eec93a55 = L.circleMarker(
+                [-37.64, 145.08],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2a78d6&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 11.427572778238567, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_42b6a6cf25acd4cbcda6ae29eec93a55.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.64,145.08&lt;/b&gt;&lt;br&gt;Online pings 2,565&lt;br&gt;Moving pings 1,366&lt;br&gt;Moving share 53%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_8167ae29c44f18b1f5ce9bfe285e3443 = L.circleMarker(
+                [-37.66, 145.06],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2a78d6&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 10.761526891724666, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_8167ae29c44f18b1f5ce9bfe285e3443.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.66,145.06&lt;/b&gt;&lt;br&gt;Online pings 2,235&lt;br&gt;Moving pings 1,132&lt;br&gt;Moving share 51%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_951c7f79c6a079bf61aa3994b792cd58 = L.circleMarker(
+                [-37.67, 145.06],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3987e5&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 10.665272487350006, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_951c7f79c6a079bf61aa3994b792cd58.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.67,145.06&lt;/b&gt;&lt;br&gt;Online pings 2,397&lt;br&gt;Moving pings 1,100&lt;br&gt;Moving share 46%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_2a814cb2dab0dcf978a5fd2d076b520f = L.circleMarker(
+                [-37.67, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#184f95&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 10.490284291002821, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_2a814cb2dab0dcf978a5fd2d076b520f.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.67,145.07&lt;/b&gt;&lt;br&gt;Online pings 1,377&lt;br&gt;Moving pings 1,043&lt;br&gt;Moving share 76%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_7477f23eace422988ad238c163f1a88b = L.circleMarker(
+                [-37.64, 145.09],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#1c5cab&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 10.326425431520573, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_7477f23eace422988ad238c163f1a88b.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.64,145.09&lt;/b&gt;&lt;br&gt;Online pings 1,409&lt;br&gt;Moving pings 991&lt;br&gt;Moving share 70%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_8211593ad641e6bde3fbe6d2bd6cd658 = L.circleMarker(
+                [-37.64, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#256abf&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 10.075676812293963, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_8211593ad641e6bde3fbe6d2bd6cd658.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.64,145.07&lt;/b&gt;&lt;br&gt;Online pings 1,445&lt;br&gt;Moving pings 914&lt;br&gt;Moving share 63%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_073f04f67a52deaf31a155d11bb01fd3 = L.circleMarker(
+                [-37.64, 145.06],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2a78d6&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 9.768795875652113, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_073f04f67a52deaf31a155d11bb01fd3.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.64,145.06&lt;/b&gt;&lt;br&gt;Online pings 1,512&lt;br&gt;Moving pings 824&lt;br&gt;Moving share 54%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_9d48e541d771c2e2b9eec9dc8f368c22 = L.circleMarker(
+                [-37.66, 145.09],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3987e5&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 9.32842955743736, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_9d48e541d771c2e2b9eec9dc8f368c22.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.66,145.09&lt;/b&gt;&lt;br&gt;Online pings 1,511&lt;br&gt;Moving pings 703&lt;br&gt;Moving share 47%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_a6b37086a4f89012957a4f35a4d892db = L.circleMarker(
+                [-37.65, 145.05],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3987e5&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 8.747212425153858, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_a6b37086a4f89012957a4f35a4d892db.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.05&lt;/b&gt;&lt;br&gt;Online pings 1,282&lt;br&gt;Moving pings 558&lt;br&gt;Moving share 44%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_dab66b18b1e41fe5b3e52237b29359ae = L.circleMarker(
+                [-37.65, 145.1],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3987e5&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 8.493725794251404, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_dab66b18b1e41fe5b3e52237b29359ae.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.10&lt;/b&gt;&lt;br&gt;Online pings 1,048&lt;br&gt;Moving pings 500&lt;br&gt;Moving share 48%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_ee2c2e4728176b76509442af190ac439 = L.circleMarker(
+                [-37.66, 145.05],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#1c5cab&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 7.99411085174124, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_ee2c2e4728176b76509442af190ac439.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.66,145.05&lt;/b&gt;&lt;br&gt;Online pings 611&lt;br&gt;Moving pings 395&lt;br&gt;Moving share 65%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_92b9b4b125affb06075e7f54100487e2 = L.circleMarker(
+                [-37.63, 145.09],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3987e5&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 7.886488323977376, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_92b9b4b125affb06075e7f54100487e2.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.63,145.09&lt;/b&gt;&lt;br&gt;Online pings 835&lt;br&gt;Moving pings 374&lt;br&gt;Moving share 45%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_6375f8cf9bf37ed80e2c3e9d531ce482 = L.circleMarker(
+                [-37.63, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#256abf&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 7.727355255617211, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_6375f8cf9bf37ed80e2c3e9d531ce482.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.63,145.07&lt;/b&gt;&lt;br&gt;Online pings 564&lt;br&gt;Moving pings 344&lt;br&gt;Moving share 61%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_d65061aa8abd2e9fe051cb02fdce947a = L.circleMarker(
+                [-37.67, 145.05],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#5598e7&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 7.6672767318912545, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_d65061aa8abd2e9fe051cb02fdce947a.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.67,145.05&lt;/b&gt;&lt;br&gt;Online pings 837&lt;br&gt;Moving pings 333&lt;br&gt;Moving share 40%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_d51d25cbc1740d9d842562c5cfc9f707 = L.circleMarker(
+                [-37.68, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2a78d6&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 6.939872209460462, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_d51d25cbc1740d9d842562c5cfc9f707.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.68,145.07&lt;/b&gt;&lt;br&gt;Online pings 403&lt;br&gt;Moving pings 214&lt;br&gt;Moving share 53%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_b7066e2ae463b01c4d007b01affb9981 = L.circleMarker(
+                [-37.64, 145.05],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#6da7ec&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 6.54996667183757, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_b7066e2ae463b01c4d007b01affb9981.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.64,145.05&lt;/b&gt;&lt;br&gt;Online pings 523&lt;br&gt;Moving pings 161&lt;br&gt;Moving share 31%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_51912c51190028afb6f266a6857cd0b9 = L.circleMarker(
+                [-37.64, 145.1],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#2a78d6&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 6.377856182341084, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_51912c51190028afb6f266a6857cd0b9.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.64,145.10&lt;/b&gt;&lt;br&gt;Online pings 269&lt;br&gt;Moving pings 140&lt;br&gt;Moving share 52%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_fc8ba405f18cc04b4cd73dd423e6118e = L.circleMarker(
+                [-37.68, 145.06],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#0d366b&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 6.282529616585832, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_fc8ba405f18cc04b4cd73dd423e6118e.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.68,145.06&lt;/b&gt;&lt;br&gt;Online pings 151&lt;br&gt;Moving pings 129&lt;br&gt;Moving share 85%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_bcb2ab6a25f9a74661ce7920fcf79b5d = L.circleMarker(
+                [-37.65, 145.04],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#6da7ec&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 5.786220674832599, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_bcb2ab6a25f9a74661ce7920fcf79b5d.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.65,145.04&lt;/b&gt;&lt;br&gt;Online pings 238&lt;br&gt;Moving pings 79&lt;br&gt;Moving share 33%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_cc0b73b3fcafc3c2974c959d6bc46629 = L.circleMarker(
+                [-37.62, 145.07],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#104281&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 5.751976846341271, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_cc0b73b3fcafc3c2974c959d6bc46629.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.62,145.07&lt;/b&gt;&lt;br&gt;Online pings 95&lt;br&gt;Moving pings 76&lt;br&gt;Moving share 80%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_e3334cddce4c888beb9ab721a2c5a0e1 = L.circleMarker(
+                [-37.66, 145.04],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#184f95&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 5.669345041901469, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_e3334cddce4c888beb9ab721a2c5a0e1.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.66,145.04&lt;/b&gt;&lt;br&gt;Online pings 96&lt;br&gt;Moving pings 69&lt;br&gt;Moving share 72%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_ba2207943f7a81966659b9be3b67d6dc = L.circleMarker(
+                [-37.67, 145.08],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#104281&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 5.3481177382754215, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_ba2207943f7a81966659b9be3b67d6dc.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.67,145.08&lt;/b&gt;&lt;br&gt;Online pings 57&lt;br&gt;Moving pings 45&lt;br&gt;Moving share 79%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_098beae972b8fd49acee0eca7c14d6f0 = L.circleMarker(
+                [-37.63, 145.06],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#9ec5f4&quot;, &quot;fillOpacity&quot;: 0.85, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 4.875988423170635, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_098beae972b8fd49acee0eca7c14d6f0.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;-37.63,145.06&lt;/b&gt;&lt;br&gt;Online pings 103&lt;br&gt;Moving pings 19&lt;br&gt;Moving share 18%
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var circle_marker_ffe0bfb0280340a83d1b461e09f03ee7 = L.circleMarker(
+                [-37.63, 145.08],
+                {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#fcfcfb&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#eb6834&quot;, &quot;fillOpacity&quot;: 1, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 9, &quot;stroke&quot;: true, &quot;weight&quot;: 2}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            circle_marker_ffe0bfb0280340a83d1b461e09f03ee7.bindTooltip(
+                `&lt;div&gt;
+                     &lt;b&gt;Home — -37.63,145.08&lt;/b&gt;&lt;br&gt;Online pings 6,756&lt;br&gt;Moving share 16%&lt;br&gt;&lt;i&gt;excluded from productive time&lt;/i&gt;
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_c3e031d22d389f52bbcde598fe3adcf4 = L.marker(
+                [-37.63, 145.08],
+                {
+}
+            ).addTo(map_2ea74eea292a702410708098676fc972);
+        
+    
+            var div_icon_20629649af153600eea1f58ba124a1ed = L.divIcon({
+  &quot;html&quot;: &quot;\u003cdiv style=\&quot;font:600 12px system-ui, -apple-system, \&quot;Segoe UI\&quot;, sans-serif;color:#eb6834;transform:translate(12px,-9px);white-space:nowrap\&quot;\u003eHome\u003c/div\u003e&quot;,
+  &quot;className&quot;: &quot;empty&quot;,
+});
+        
+    
+                marker_c3e031d22d389f52bbcde598fe3adcf4.setIcon(div_icon_20629649af153600eea1f58ba124a1ed);
+            
+    
+            map_2ea74eea292a702410708098676fc972.fitBounds(
+                [[-37.68, 145.04], [-37.62, 145.1]],
+                {&quot;padding&quot;: [25, 25]}
+            );
+        
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div><details><summary>Table view</summary><table><thead><tr><th>Cell</th><th>Online pings</th><th>Moving pings</th><th>Moving share</th><th>Home</th></tr></thead><tbody><tr><td>-37.65,145.07</td><td>71337</td><td>16738</td><td>0.23</td><td>False</td></tr><tr><td>-37.65,145.08</td><td>12446</td><td>7475</td><td>0.60</td><td>False</td></tr><tr><td>-37.66,145.08</td><td>8371</td><td>3475</td><td>0.42</td><td>False</td></tr><tr><td>-37.65,145.09</td><td>6825</td><td>3464</td><td>0.51</td><td>False</td></tr><tr><td>-37.65,145.06</td><td>4021</td><td>2621</td><td>0.65</td><td>False</td></tr><tr><td>-37.66,145.07</td><td>2822</td><td>1699</td><td>0.60</td><td>False</td></tr><tr><td>-37.64,145.08</td><td>2565</td><td>1366</td><td>0.53</td><td>False</td></tr><tr><td>-37.66,145.06</td><td>2235</td><td>1132</td><td>0.51</td><td>False</td></tr><tr><td>-37.67,145.06</td><td>2397</td><td>1100</td><td>0.46</td><td>False</td></tr><tr><td>-37.63,145.08</td><td>6756</td><td>1063</td><td>0.16</td><td>True</td></tr><tr><td>-37.67,145.07</td><td>1377</td><td>1043</td><td>0.76</td><td>False</td></tr><tr><td>-37.64,145.09</td><td>1409</td><td>991</td><td>0.70</td><td>False</td></tr><tr><td>-37.64,145.07</td><td>1445</td><td>914</td><td>0.63</td><td>False</td></tr><tr><td>-37.64,145.06</td><td>1512</td><td>824</td><td>0.54</td><td>False</td></tr><tr><td>-37.66,145.09</td><td>1511</td><td>703</td><td>0.47</td><td>False</td></tr><tr><td>-37.65,145.05</td><td>1282</td><td>558</td><td>0.44</td><td>False</td></tr><tr><td>-37.65,145.10</td><td>1048</td><td>500</td><td>0.48</td><td>False</td></tr><tr><td>-37.66,145.05</td><td>611</td><td>395</td><td>0.65</td><td>False</td></tr><tr><td>-37.63,145.09</td><td>835</td><td>374</td><td>0.45</td><td>False</td></tr><tr><td>-37.63,145.07</td><td>564</td><td>344</td><td>0.61</td><td>False</td></tr><tr><td>-37.67,145.05</td><td>837</td><td>333</td><td>0.40</td><td>False</td></tr><tr><td>-37.68,145.07</td><td>403</td><td>214</td><td>0.53</td><td>False</td></tr><tr><td>-37.64,145.05</td><td>523</td><td>161</td><td>0.31</td><td>False</td></tr><tr><td>-37.64,145.10</td><td>269</td><td>140</td><td>0.52</td><td>False</td></tr><tr><td>-37.68,145.06</td><td>151</td><td>129</td><td>0.85</td><td>False</td></tr><tr><td>-37.65,145.04</td><td>238</td><td>79</td><td>0.33</td><td>False</td></tr><tr><td>-37.62,145.07</td><td>95</td><td>76</td><td>0.80</td><td>False</td></tr><tr><td>-37.66,145.04</td><td>96</td><td>69</td><td>0.72</td><td>False</td></tr><tr><td>-37.67,145.08</td><td>57</td><td>45</td><td>0.79</td><td>False</td></tr><tr><td>-37.63,145.06</td><td>103</td><td>19</td><td>0.18</td><td>False</td></tr><tr><td>-37.81,144.95</td><td>35</td><td>0</td><td>0.00</td><td>False</td></tr><tr><td>-37.82,144.95</td><td>45</td><td>0</td><td>0.00</td><td>False</td></tr></tbody></table></details></section>
+<footer>
+  Historical estimates from one driver's own records. They describe what happened,
+  not current demand, driver supply, incentives or surge. Generated by
+  <code>scripts/run_phase3.py</code>.
+</footer>
+</div>
+<script>
+const root = document.documentElement;
+const btn = document.getElementById('theme');
+const DARK = { ink2:'#c3c2b7', muted:'#898781', grid:'#2c2c2a', axis:'#383835',
+               unmeasured:'#2c2c2a', surface:'#1a1a19' };
+const LIGHT = { ink2:'#52514e', muted:'#898781', grid:'#e1e0d9', axis:'#c3c2b7',
+                unmeasured:'#e6e5e0', surface:'#fcfcfb' };
+
+function isDark() {
+  const stamp = root.getAttribute('data-theme');
+  if (stamp) return stamp === 'dark';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function paint() {
+  const t = isDark() ? DARK : LIGHT;
+  btn.textContent = isDark() ? 'Light' : 'Dark';
+  document.querySelectorAll('.js-plotly-plot').forEach(function (d) {
+    const up = {
+      'font.color': t.ink2,
+      'xaxis.linecolor': t.axis, 'xaxis.tickfont.color': t.muted,
+      'yaxis.gridcolor': t.grid, 'yaxis.tickfont.color': t.muted
+    };
+    // Faceted figures carry axis2..axisN; mirror the same tokens onto each.
+    Object.keys(d.layout || {}).forEach(function (k) {
+      if (/^xaxis\d+$/.test(k)) { up[k + '.linecolor'] = t.axis; up[k + '.tickfont.color'] = t.muted; }
+      if (/^yaxis\d+$/.test(k)) { up[k + '.gridcolor'] = t.grid; up[k + '.tickfont.color'] = t.muted; }
+    });
+    (d.layout.annotations || []).forEach(function (_, i) {
+      up['annotations[' + i + '].font.color'] = t.ink2;
+    });
+    Plotly.relayout(d, up);
+    (d.data || []).forEach(function (tr, i) {
+      if (tr.meta === 'unmeasured') {
+        Plotly.restyle(d, { colorscale: [[[0, t.unmeasured], [1, t.unmeasured]]] }, [i]);
+      }
+      // Separator rings are drawn in the surface colour, so they have to follow it.
+      if (tr.marker && tr.marker.line && tr.marker.line.width) {
+        Plotly.restyle(d, { 'marker.line.color': t.surface }, [i]);
+      }
+    });
+  });
+}
+
+btn.addEventListener('click', function () {
+  root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+  paint();
+});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paint);
+window.addEventListener('load', paint);
+</script>
+</body>
+</html>
