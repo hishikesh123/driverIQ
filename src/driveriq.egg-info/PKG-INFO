@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: driveriq
+Version: 0.1.0
+Summary: Location- and time-aware earnings analysis from a personal Uber driver export
+Requires-Python: >=3.11
+Requires-Dist: pandas
+Requires-Dist: pyarrow
+Requires-Dist: sqlalchemy
+Requires-Dist: psycopg2-binary
+Requires-Dist: plotly
+Requires-Dist: folium
+Requires-Dist: scikit-learn
+Requires-Dist: streamlit

@@ -1,9 +1,6 @@
 """Phase 4 — fit and honestly evaluate the earnings model."""
 
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import numpy as np
 import pandas as pd
@@ -160,7 +157,7 @@ def _write_report(data, train, test, cutoff, scores, best, coverage, artifacts,
             add(f"| `{r.feature}` | {r.importance:.3f} |")
         add("")
         hist = importances[importances["feature"].str.contains("history|recent")]
-        add(f"The driver's own track record — what this window has paid before plus recent")
+        add("The driver's own track record — what this window has paid before plus recent")
         add(f"form — accounts for **{hist['importance'].sum():.0%}** of the signal. The model")
         add("is mostly learning this driver's established pattern, not a general law of")
         add("the Melbourne market.")

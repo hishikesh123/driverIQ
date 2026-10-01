@@ -1,9 +1,6 @@
 """Phase 3 — render the visualisation report from the Phase 1/2 marts."""
 
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 

@@ -120,10 +120,17 @@ def _call(prompt: str, as_json: bool = False, model: str = MODEL) -> str:
 
 
 def available() -> bool:
+    """Cheap liveness check.
+
+    Deliberately not a generation call: this runs on app startup, and spending a
+    model inference to ask whether the model exists made the first paint hang.
+    """
+    tags_url = OLLAMA_URL.rsplit("/api/", 1)[0] + "/api/tags"
     try:
-        _call("Reply with {}", as_json=True)
-        return True
-    except OllamaUnavailable:
+        with urllib.request.urlopen(tags_url, timeout=2) as response:
+            models = json.loads(response.read()).get("models", [])
+        return any(m.get("name", "").startswith(MODEL.split(":")[0]) for m in models)
+    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError):
         return False
 
 

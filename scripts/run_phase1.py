@@ -4,10 +4,7 @@ Reads the current export out of Postgres, derives sessions and locations, writes
 the analytical marts to data/processed/, and refreshes the data audit.
 """
 
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 

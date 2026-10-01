@@ -36,31 +36,31 @@ that actually cost something.
 
 > You have 4 hours free on Friday evening. The likely total earnings for this time range from $24.93 to $77.54. The evening peak window, which is 3 hours long, is expected to earn between $20.61 and $72.98.
 
-`source: llm` · `9.5s`
+`source: llm` · `10.3s`
 
 **Q — When is the best time to drive this week?**
 
 > Thursday evening peak is likely to earn between $24.68 and $73.64, with a high confidence level based on 50 times worked before. Friday evening peak is also a good option, with a likely total range of $20.61 to $72.98, based on 54 times worked before. Sunday evening peak is another option, with a likely total range of $25.19 to $70.16, based on 42 times worked before.
 
-`source: llm` · `7.0s`
+`source: llm` · `7.8s`
 
 **Q — How long should I stay out once I start?**
 
 > You should stay out for 3 hours, as the number of trips per hour peaks in the second hour and holds through the third. After the third hour, the number of trips falls off.
 
-`source: llm` · `3.5s`
+`source: llm` · `3.9s`
 
 **Q — Is Sunday afternoon any good?**
 
 > Sunday afternoon is likely to be worth between $2.39 and $22.91. This is based on 39 times worked before with a high confidence level.
 
-`source: llm` · `4.2s`
+`source: llm` · `4.8s`
 
 **Q — Which area should I drive in tonight?**
 
 > I can't answer that one. This system only knows your own past earnings by day and time — it has no view of current demand, surge, other drivers, or which area to pick. Location specifically isn't answerable here: 27 of your 33 recorded sessions were in the same cell and 99% of your driving falls within 3 km of one point, so there's no second area to compare against. Ask me about timing instead.
 
-`source: canned` · `0.5s`
+`source: canned` · `0.6s`
 
 **Q — Should I work Monday morning?**
 
@@ -73,5 +73,5 @@ that actually cost something.
 - Questions: 6
 - Answered by the model: 5
 - Narrations rejected for inventing a figure: 0
-- Mean response time: 4.8s (two model calls per question)
+- Mean response time: 5.3s (two model calls per question)
 

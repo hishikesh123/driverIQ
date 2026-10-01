@@ -279,8 +279,11 @@ def performance_folium(cells: pd.DataFrame, home_cell: str | None) -> str:
     """
     import folium
 
-    work = cells[(cells["moving_pings"] > 0) & (~cells["at_home"])]
-    home = cells[cells["at_home"]]
+    # The published marts drop the home cell and the column with it, so absence
+    # means "every cell here is a work cell" rather than a missing field.
+    at_home = cells["at_home"] if "at_home" in cells else pd.Series(False, index=cells.index)
+    work = cells[(cells["moving_pings"] > 0) & (~at_home)]
+    home = cells[at_home]
     centre = [work["lat"].mean(), work["lon"].mean()]
 
     # Plain OpenStreetMap: CartoDB's basemaps now require an API key.

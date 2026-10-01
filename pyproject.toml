@@ -1,0 +1,30 @@
+[project]
+name = "driveriq"
+version = "0.1.0"
+description = "Location- and time-aware earnings analysis from a personal Uber driver export"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "pyarrow",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "plotly",
+    "folium",
+    "scikit-learn",
+    "streamlit",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Without this the package is only importable via a sys.path hack at the top of
+# every entry point, which editors cannot see -- so imports resolve at runtime
+# but show as errors while you are writing them.
+[tool.pyright]
+extraPaths = ["src"]
+venvPath = "."
+venv = ".venv"
